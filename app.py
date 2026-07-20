@@ -129,7 +129,88 @@ elif choice == "2. Load CSV":
     uploaded = st.file_uploader("Upload CSV", type="csv")
 
     if uploaded:
-        df = pd.read_csv(uploaded)
+       import pandas as pd
+import streamlit as st
+
+uploaded = st.file_uploader(
+    "Upload Dataset CSV",
+    type=["csv"]
+)
+
+if uploaded is not None:
+
+    # Daftar encoding yang akan dicoba
+    encodings = [
+        "utf-8",
+        "utf-8-sig",
+        "cp1252",
+        "latin1",
+        "ISO-8859-1"
+    ]
+
+    df = None
+
+    # Coba membaca dengan delimiter otomatis
+    for enc in encodings:
+        try:
+            uploaded.seek(0)
+            df = pd.read_csv(
+                uploaded,
+                encoding=enc,
+                sep=None,
+                engine="python"
+            )
+            st.success(f"✅ File berhasil dibaca menggunakan encoding: {enc}")
+            break
+
+        except Exception:
+            pass
+
+    # Jika gagal, coba delimiter koma
+    if df is None:
+        for enc in encodings:
+            try:
+                uploaded.seek(0)
+                df = pd.read_csv(
+                    uploaded,
+                    encoding=enc
+                )
+                st.success(f"✅ File berhasil dibaca menggunakan encoding: {enc}")
+                break
+
+            except Exception:
+                pass
+
+    # Jika masih gagal
+    if df is None:
+        st.error(
+            """
+            ❌ File CSV tidak dapat dibaca.
+
+            Kemungkinan penyebab:
+            - Encoding bukan UTF-8
+            - Separator salah
+            - File rusak
+            - File bukan CSV
+            """
+        )
+        st.stop()
+
+    # Tampilkan data
+    st.subheader("Preview Dataset")
+    st.dataframe(df)
+
+    # Informasi dataset
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Jumlah Baris", len(df))
+
+    with col2:
+        st.metric("Jumlah Kolom", len(df.columns))
+
+    with col3:
+        st.metric("Missing Value", int(df.isnull().sum().sum()))
 
         if 'teks' not in df.columns or 'label' not in df.columns:
             st.error("CSV harus ada kolom teks & label")
