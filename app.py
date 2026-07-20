@@ -129,6 +129,8 @@ elif choice == "2. Load CSV":
     uploaded = st.file_uploader("Upload CSV", type="csv")
 
     if uploaded:
+        df = pd.read_csv(uploaded)
+
         if 'teks' not in df.columns or 'label' not in df.columns:
             st.error("CSV harus ada kolom teks & label")
         else:
